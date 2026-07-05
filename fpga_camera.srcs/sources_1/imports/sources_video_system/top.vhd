@@ -31,6 +31,7 @@ entity top is port(
     -- board I/O
     RESETN       : in    std_logic; -- reset button (active low)
     SW0          : in    std_logic; -- switch0 activates test image output
+    SW1          : in    std_logic; -- switch1 activates split-screen view
     LED          : out   std_logic_vector(1 downto 0); -- status LEDs
                    -- status LED(0): on if camera settings have been loaded
                    -- status LED(1): blinks while images are received from camera
@@ -75,6 +76,16 @@ architecture Behavioral of top is
     signal ram_rxaddr : std_logic_vector(8 downto 0);
     signal ram_ryaddr : std_logic_vector(7 downto 0);
     signal ram_rdata : std_logic_vector(15 downto 0);
+    signal ram_rdata_raw : std_logic_vector(15 downto 0); -- raw pixel data for split-screen
+    -- 2-cycle delay pipeline to match colorbalancing latency
+    signal raw_pix_data_d1  : std_logic_vector(15 downto 0);
+    signal raw_pix_data_d2  : std_logic_vector(15 downto 0);
+    signal raw_pix_valid_d1 : std_logic;
+    signal raw_pix_valid_d2 : std_logic;
+    signal raw_vsync_d1     : std_logic;
+    signal raw_vsync_d2     : std_logic;
+    signal raw_hsync_d1     : std_logic;
+    signal raw_hsync_d2     : std_logic;
     -- white balance gain signals from user interface to color balancing
     signal cam_gain_r : std_logic_vector(11 downto 0) := "000100000000";
     signal cam_gain_g : std_logic_vector(11 downto 0) := "000100000000";
@@ -133,7 +144,24 @@ begin
         pix_valid    => cam_pix_valid, 
         vsync        => cam_vsync,
         hsync        => cam_hsync);
-        
+
+    ---------------------------------------------------
+    -- Raw data 2-cycle delay (match colorbalancing latency)
+    ---------------------------------------------------
+    process(cam_clk)
+    begin
+        if rising_edge(cam_clk) then
+            raw_pix_data_d1  <= cam_pix_data;
+            raw_pix_data_d2  <= raw_pix_data_d1;
+            raw_pix_valid_d1 <= cam_pix_valid;
+            raw_pix_valid_d2 <= raw_pix_valid_d1;
+            raw_vsync_d1     <= cam_vsync;
+            raw_vsync_d2     <= raw_vsync_d1;
+            raw_hsync_d1     <= cam_hsync;
+            raw_hsync_d2     <= raw_hsync_d1;
+        end if;
+    end process;
+
     ---------------------------------------------------
     -- Color Balancing / Color Adjustment
     ---------------------------------------------------
@@ -178,34 +206,50 @@ begin
     -- Frame Buffer
     ---------------------------------------------------
         
-    -- image frame buffer
+    -- balanced (white-balanced) image frame buffer
     buf0: entity work.framebuffer port map(
         -- write port
         wclk   => cam_clk,
-        wen    => col_pix_valid, -- write enable,
+        wen    => col_pix_valid,
         vsync  => col_vsync,
-        hsync  => col_hsync, 
+        hsync  => col_hsync,
         wdata  => col_pix_data,
         -- read port
         rclk   => vga_clk25,
         rxaddr => ram_rxaddr,
-        ryaddr => ram_ryaddr, 
+        ryaddr => ram_ryaddr,
         rdata  => ram_rdata);
-        
+
+    -- raw (unprocessed) image frame buffer for split-screen
+    buf_raw: entity work.framebuffer port map(
+        -- write port
+        wclk   => cam_clk,
+        wen    => raw_pix_valid_d2,
+        vsync  => raw_vsync_d2,
+        hsync  => raw_hsync_d2,
+        wdata  => raw_pix_data_d2,
+        -- read port
+        rclk   => vga_clk25,
+        rxaddr => ram_rxaddr,
+        ryaddr => ram_ryaddr,
+        rdata  => ram_rdata_raw);
+
     ---------------------------------------------------
     -- VGA Interface Controller
     ---------------------------------------------------
-    
+
     vga0: entity work.vga_controller port map(
-        clk => vga_clk25,
-        reset => '0',
-        pixxaddr => ram_rxaddr,
-        pixyaddr => ram_ryaddr,
-        pixdata => ram_rdata,
-        debugmode => SW0,
-        vga_red => VGA_R,
+        clk          => vga_clk25,
+        reset        => '0',
+        pixxaddr     => ram_rxaddr,
+        pixyaddr     => ram_ryaddr,
+        pixdata      => ram_rdata,
+        pixdata_raw  => ram_rdata_raw,
+        debugmode    => SW0,
+        split_screen => SW1,
+        vga_red   => VGA_R,
         vga_green => VGA_G,
-        vga_blue => VGA_B,
+        vga_blue  => VGA_B,
         vga_hsync => VGA_HS,
         vga_vsync => VGA_VS);
         

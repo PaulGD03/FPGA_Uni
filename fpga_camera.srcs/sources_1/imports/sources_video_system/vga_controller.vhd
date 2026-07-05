@@ -17,18 +17,20 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.std_logic_unsigned.all;
 
 entity vga_controller is port(
-    clk       : in  std_logic; -- 25.175 MHz
-    reset     : in  std_logic;
-    pixxaddr  : out std_logic_vector(8 downto 0); -- frame buffer read x-address
-    pixyaddr  : out std_logic_vector(7 downto 0); -- frame buffer read y-address
-    pixdata   : in  std_logic_vector(15 downto 0); -- pixel data
-    debugmode : in  std_logic;                     -- activates a test pattern output
+    clk          : in  std_logic; -- 25.175 MHz
+    reset        : in  std_logic;
+    pixxaddr     : out std_logic_vector(8 downto 0); -- frame buffer read x-address
+    pixyaddr     : out std_logic_vector(7 downto 0); -- frame buffer read y-address
+    pixdata      : in  std_logic_vector(15 downto 0); -- balanced pixel data
+    pixdata_raw  : in  std_logic_vector(15 downto 0); -- raw (unprocessed) pixel data
+    debugmode    : in  std_logic;                     -- test pattern output
+    split_screen : in  std_logic;                     -- SW1: split raw/balanced view
     -- VGA output ports
     vga_red   : out std_logic_vector(3 downto 0);
     vga_green : out std_logic_vector(3 downto 0);
     vga_blue  : out std_logic_vector(3 downto 0);
     vga_hsync : out std_logic;
-    vga_vsync : out std_logic);    
+    vga_vsync : out std_logic);
 end vga_controller;
 
 architecture Behavioral of vga_controller is
@@ -197,19 +199,36 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            if (reset='1') or (pixvalid='0') then 
-            	-- invalid pixels are black
+            if (reset='1') or (pixvalid='0') then
+                -- invalid pixels are black
                 rpix <= "0000";
-                gpix <= "0000"; -- display test
+                gpix <= "0000";
                 bpix <= "0000";
             elsif (debugmode='1') then
                 -- activate debug mode to display a test pattern on the screen
                 rpix <= rgb1( 3 downto 0);
                 gpix <= rgb1( 7 downto 4);
                 bpix <= rgb1(11 downto 8);
+            elsif (split_screen='1') then
+                -- split-screen mode: raw left, balanced right, red line in middle
+                if xcount < 318 then
+                    -- left half: raw (unprocessed) camera data
+                    rpix <= pixdata_raw(15 downto 12);
+                    gpix <= pixdata_raw(10 downto 7);
+                    bpix <= pixdata_raw(4 downto 1);
+                elsif xcount < 322 then
+                    -- red divider line (4 pixels wide, centered)
+                    rpix <= "1111";
+                    gpix <= "0000";
+                    bpix <= "0000";
+                else
+                    -- right half: white-balanced data
+                    rpix <= pixdata(15 downto 12);
+                    gpix <= pixdata(10 downto 7);
+                    bpix <= pixdata(4 downto 1);
+                end if;
             else
-            	-- pixel data from camera,
-                -- assumes RGB565 format
+                -- normal mode: white-balanced data only
                 rpix <= pixdata(15 downto 12); -- red
                 gpix <= pixdata(10 downto 7);  -- green
                 bpix <= pixdata(4 downto 1);   -- blue
