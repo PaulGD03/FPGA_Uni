@@ -1,0 +1,113 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Sun Jul  5 23:20:23 2026
+| Host         : Ryzen-Rig running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file top_control_sets_placed.rpt
+| Design       : top
+| Device       : xc7a100t
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Total control sets                                       |    35 |
+|    Minimum number of control sets                        |    35 |
+|    Addition due to synthesis replication                 |     0 |
+|    Addition due to physical synthesis replication        |     0 |
+| Unused register locations in slices containing registers |    92 |
++----------------------------------------------------------+-------+
+* Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
+** Run report_qor_suggestions for automated merging and remapping suggestions
+
+
+2. Histogram
+------------
+
++--------------------+-------+
+|       Fanout       | Count |
++--------------------+-------+
+| Total control sets |    35 |
+| >= 0 to < 4        |     0 |
+| >= 4 to < 6        |     8 |
+| >= 6 to < 8        |     3 |
+| >= 8 to < 10       |     5 |
+| >= 10 to < 12      |     3 |
+| >= 12 to < 14      |     3 |
+| >= 14 to < 16      |     0 |
+| >= 16              |    13 |
++--------------------+-------+
+* Control sets can be remapped at either synth_design or opt_design
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |              67 |           40 |
+| No           | No                    | Yes                    |               0 |            0 |
+| No           | Yes                   | No                     |             204 |           83 |
+| Yes          | No                    | No                     |              54 |           25 |
+| Yes          | No                    | Yes                    |               0 |            0 |
+| Yes          | Yes                   | No                     |             167 |           50 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++------------------------+----------------------------------------+---------------------------------------+------------------+----------------+--------------+
+|      Clock Signal      |              Enable Signal             |            Set/Reset Signal           | Slice Load Count | Bel Load Count | Bels / Slice |
++------------------------+----------------------------------------+---------------------------------------+------------------+----------------+--------------+
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_r/r_gain[11]_i_1_n_0    |                                       |                2 |              4 |         2.00 |
+|  OV7670_PCLK_IBUF_BUFG |                                        | col0/neqOp__0                         |                1 |              4 |         4.00 |
+|  OV7670_PCLK_IBUF_BUFG |                                        | col0/neqOp_inferred__1/i__n_0         |                2 |              4 |         2.00 |
+|  OV7670_PCLK_IBUF_BUFG |                                        | col0/neqOp_inferred__0/i__n_0         |                2 |              4 |         2.00 |
+|  clkgen0/inst/clk25    | vga0/nextline                          |                                       |                2 |              4 |         2.00 |
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_b/r_gain[11]_i_1__1_n_0 |                                       |                3 |              4 |         1.33 |
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_g/r_gain[11]_i_1__0_n_0 |                                       |                2 |              4 |         2.00 |
+|  OV7670_PCLK_IBUF_BUFG | cam0/debug0/vcount[4]_i_1_n_0          |                                       |                1 |              5 |         5.00 |
+|  clkgen0/inst/clk25    | vga0/nextline                          | vga0/nextframe                        |                3 |              6 |         2.00 |
+|  clkgen0/inst/clk50    | cam0/cami2c/i2ctx0/sreg[15]_i_1_n_0    | cam0/cami2c/i2ctx0/start_valid        |                2 |              6 |         3.00 |
+|  clkgen0/inst/clk50    | cam0/cami2c/i2ctx0/bitcount[5]_i_1_n_0 | cam0/cami2c/i2ctx0/start_valid        |                2 |              6 |         3.00 |
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_g/r_gain[11]_i_1__0_n_0 | wb_ui/gain_adj_g/r_gain[9]_i_1_n_0    |                3 |              8 |         2.67 |
+|  clkgen0/inst/clk50    |                                        | cam0/cami2c/i2ctx0/timer[0]           |                2 |              8 |         4.00 |
+|  clkgen0/inst/clk50    |                                        | cam0/cami2c/rom0/addr[7]_i_1_n_0      |                3 |              8 |         2.67 |
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_r/r_gain[11]_i_1_n_0    | wb_ui/gain_adj_r/r_gain[9]_i_1__0_n_0 |                4 |              8 |         2.00 |
+|  clkgen0/inst/clk50    | wb_ui/gain_adj_b/r_gain[11]_i_1__1_n_0 | wb_ui/gain_adj_b/r_gain[9]_i_1__1_n_0 |                3 |              8 |         2.67 |
+|  clkgen0/inst/clk25    |                                        | vga0/nextline                         |                4 |             10 |         2.50 |
+|  OV7670_PCLK_IBUF_BUFG | cam0/cam0/sel                          | cam0/cam0/xaddr[9]_i_1_n_0            |                3 |             10 |         3.33 |
+|  clkgen0/inst/clk25    |                                        |                                       |                6 |             10 |         1.67 |
+|  clkgen0/inst/clk25    |                                        | vga0/rgb10                            |                9 |             12 |         1.33 |
+|  clkgen0/inst/clk25    |                                        | vga0/rpix0                            |               12 |             12 |         1.00 |
+|  OV7670_PCLK_IBUF_BUFG |                                        |                                       |               10 |             12 |         1.20 |
+|  clkgen0/inst/clk50    | cam0/cami2c/i2ctx0/sreg[15]_i_1_n_0    |                                       |               10 |             16 |         1.60 |
+|  clkgen0/inst/clk50    | wb_ui/deb_inc/counter[0]_i_2_n_0       | wb_ui/deb_inc/counter[0]              |                4 |             16 |         4.00 |
+|  clkgen0/inst/clk50    | wb_ui/deb_dec/counter[0]_i_2__0_n_0    | wb_ui/deb_dec/counter[0]              |                4 |             16 |         4.00 |
+|  clkgen0/inst/clk50    | wb_ui/deb_ch_r/counter[0]_i_2__2_n_0   | wb_ui/deb_ch_r/counter[0]             |                4 |             16 |         4.00 |
+|  clkgen0/inst/clk50    | wb_ui/deb_ch_l/counter[0]_i_2__1_n_0   | wb_ui/deb_ch_l/counter[0]             |                4 |             16 |         4.00 |
+|  clkgen0/inst/clk50    | wb_ui/deb_rst/counter[0]_i_2__3_n_0    | wb_ui/deb_rst/counter[0]              |                4 |             16 |         4.00 |
+|  clkgen0/inst/clk50    | cam0/cami2c/timer_enable               |                                       |                5 |             17 |         3.40 |
+|  OV7670_PCLK_IBUF_BUFG | buf0/vcount0                           | col0/clear                            |                5 |             17 |         3.40 |
+|  OV7670_PCLK_IBUF_BUFG | buf0/hcount0                           | col0/end_of_line0                     |                5 |             18 |         3.60 |
+|  clkgen0/inst/clk25    |                                        | vga0/ycount0                          |                8 |             22 |         2.75 |
+|  clkgen0/inst/clk25    |                                        | vga0/xcount0                          |               10 |             29 |         2.90 |
+|  clkgen0/inst/clk50    |                                        |                                       |               24 |             47 |         1.96 |
+|  clkgen0/inst/clk50    |                                        | wb_ui/bcd_conv/reset                  |               30 |             91 |         3.03 |
++------------------------+----------------------------------------+---------------------------------------+------------------+----------------+--------------+
+
+
