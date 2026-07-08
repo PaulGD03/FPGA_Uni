@@ -3,16 +3,16 @@
 -- Engineer: FPGA-Schaltungsentwurf SS2026
 --
 -- Module Name: bcd_converter - Behavioral
--- Description:
---   Converts 4.8 fixed-point gain to a 2-decimal display.
---   Integer  = gain[11:8] (single digit, 0-2)
---   Fraction = gain[7:0] * 100 / 256  (2 decimal digits: tenths, hundredths)
---   4-stage pipeline, no FSM.
+-- Beschreibung:
+--   Wandelt 4.8 Festkomma-Gain in eine 2-Dezimalstellen-Anzeige um.
+--   Ganzzahl  = gain[11:8] (eine Ziffer, 0-2)
+--   Nachkomma  = gain[7:0] * 100 / 256  (2 Dezimalstellen: Zehntel, Hunderstel)
+--   4-stufige Pipeline, keine FSM.
 --
---   BCD output (24 bits, only 3 digits used):
---     bcd(19:16) = integer digit
---     bcd(15:12) = tenths
---     bcd(11:8)  = hundredths
+--   BCD-Ausgang (24 Bit, nur 3 Ziffern verwendet):
+--     bcd(19:16) = Ganzzahl-Ziffer
+--     bcd(15:12) = Zehntel
+--     bcd(11:8)  = Hunderstel
 --     rest = 0
 ----------------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ architecture Behavioral of bcd_converter is
 
     signal bcd_reg    : std_logic_vector(23 downto 0) := (others => '0');
 
-    -- pipeline registers
+    -- Pipeline-Register
     signal gain_p1    : unsigned(11 downto 0) := (others => '0');
     signal gain_p2    : unsigned(11 downto 0) := (others => '0');
     signal frac_val   : unsigned(6 downto 0)  := (others => '0');  -- gain[7:0]*100/256, 0..99
@@ -40,14 +40,14 @@ architecture Behavioral of bcd_converter is
     signal tenths     : unsigned(3 downto 0)  := (others => '0');
     signal hundredths : unsigned(3 downto 0)  := (others => '0');
 
-    -- intermediate product (8-bit * 100 = 15 bits max)
+    -- Zwischenprodukt (8-bit * 100 = max 15 bit)
     signal product : unsigned(14 downto 0) := (others => '0');
 
 begin
 
     bcd <= bcd_reg;
 
-    -- Stage 1: latch gain, compute fraction * 100
+    -- Stufe 1: Gain zwischenspeichern, Nachkomma * 100 berechnen
     process(clk)
     begin
         if rising_edge(clk) then
@@ -56,15 +56,15 @@ begin
                 product <= (others => '0');
             else
                 gain_p1 <= unsigned(gain);
-                -- gain[7:0] * 100 + 128 (rounding: +0.5 before /256)
-                -- max 255*100+128 = 25628, fits in 15 bits
+                -- gain[7:0] * 100 + 128 (Rundung: +0.5 vor /256)
+                -- max 255*100+128 = 25628, passt in 15 bit
                 product <= unsigned(gain(7 downto 0)) * to_unsigned(100, 7)
                            + to_unsigned(128, 15);
             end if;
         end if;
     end process;
 
-    -- Stage 2: divide by 256 (shift right 8), pipeline gain
+    -- Stufe 2: durch 256 teilen (8 bit rechts schieben), Gain durchreichen
     process(clk)
     begin
         if rising_edge(clk) then
@@ -73,7 +73,7 @@ begin
                 frac_val <= (others => '0');
             else
                 gain_p2 <= gain_p1;
-                -- clamp: if product > 99*256 = 25344, cap fraction at 99
+                -- begrenzen: wenn product > 99*256 = 25344, Nachkomma auf 99 kappen
                 if product > to_unsigned(25344, 15) then
                     frac_val <= to_unsigned(99, 7);
                 else
@@ -83,7 +83,7 @@ begin
         end if;
     end process;
 
-    -- Stage 3: split into tenths and hundredths
+    -- Stufe 3: in Zehntel und Hunderstel aufteilen
     process(clk)
         variable f : integer range 0 to 99;
     begin
@@ -101,7 +101,7 @@ begin
         end if;
     end process;
 
-    -- Stage 4: assemble BCD output
+    -- Stufe 4: BCD-Ausgang zusammensetzen
     process(clk)
     begin
         if rising_edge(clk) then

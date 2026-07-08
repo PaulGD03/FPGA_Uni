@@ -3,13 +3,14 @@
 -- Engineer: FPGA-Schaltungsentwurf SS2026
 --
 -- Module Name: repeat_timer - Behavioral
--- Description:
---   Auto-repeat timer with generous dead zone for clean tap vs. hold detection.
---   On 'pressed': fires one immediate tick, then waits DEAD_ZONE_CYCLES
---   (500 ms at 50 MHz) with NO ticks. After the dead zone, fires ticks at
---   REPEAT_CYCLES intervals (200 ms = 5 Hz).
---   If 'released' at any point, returns to IDLE immediately.
---   A quick tap (< 500 ms) produces exactly 1 tick.
+-- Beschreibung:
+--   Auto-Repeat Timer mit grosszügiger Totzone für saubere
+--   Kurzdrück-/Halte-Unterscheidung.
+--   Bei 'pressed': feuert einen sofortigen Tick, wartet dann DEAD_ZONE_CYCLES
+--   (500 ms bei 50 MHz) mit KEINEN Ticks. Nach der Totzone feuert es Ticks im
+--   REPEAT_CYCLES Intervall (200 ms = 5 Hz).
+--   Wenn 'released' zu irgendeinem Zeitpunkt kommt, geht es sofort zurück zu IDLE.
+--   Ein kurzes Antippen (< 500 ms) erzeugt genau 1 Tick.
 ----------------------------------------------------------------------------------
 
 library IEEE;
@@ -26,7 +27,7 @@ end repeat_timer;
 
 architecture Behavioral of repeat_timer is
 
-    -- at 50 MHz: 25,000,000 = 500 ms dead zone, 10,000,000 = 200 ms repeat (5 Hz)
+    -- bei 50 MHz: 25.000.000 = 500 ms Totzone, 10.000.000 = 200 ms Wiederhohlung (5 Hz)
     constant DEAD_ZONE_CYCLES : integer := 25000000;
     constant REPEAT_CYCLES    : integer := 10000000;
 
@@ -52,7 +53,7 @@ begin
                     when IDLE =>
                         counter <= 0;
                         if pressed = '1' then
-                            tick  <= '1';      -- single tap tick
+                            tick  <= '1';      -- einzelner Antipp-Tick
                             state <= DEAD_ZONE;
                         end if;
 
@@ -61,7 +62,7 @@ begin
                             state   <= IDLE;
                             counter <= 0;
                         elsif counter = DEAD_ZONE_CYCLES - 1 then
-                            -- dead zone elapsed, begin repeat (no tick here)
+                            -- Totzone abgelaufen, beginne Wiederhohlung (kein Tick hier)
                             counter <= 0;
                             state   <= REPEAT;
                         else

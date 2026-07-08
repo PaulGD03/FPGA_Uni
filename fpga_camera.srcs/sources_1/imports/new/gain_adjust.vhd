@@ -3,13 +3,13 @@
 -- Engineer: FPGA-Schaltungsentwurf SS2026
 --
 -- Module Name: gain_adjust - Behavioral
--- Description:
---   Per-channel white balance gain controller.
---   Internal 4.8 fixed-point storage. Step sizes are decimal-friendly:
---     "00" =   3 (~0.01, tap)
---     "01" =  26 (~0.10, short hold)
---     "10" = 256 (~1.00, long hold)
---   Bounds: MIN_GAIN=2 (~0.01), MAX_GAIN=767 (~3.00)
+-- Beschreibung:
+--   Kanal-Gain-Regler für den Weissabgleich.
+--   Interner 4.8 Festkomma-Speicher. Schrittweiten sind dezimal-freundlich:
+--     "00" =   3 (~0.01, Antippen)
+--     "01" =  26 (~0.10, kurzes Halten)
+--     "10" = 256 (~1.00, langes Halten)
+--   Grenzen: MIN_GAIN=2 (~0.01), MAX_GAIN=767 (~3.00)
 --   Reset = neutral (256 = 1.00).
 ----------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ begin
         if rising_edge(clk) then
             v_gain := r_gain;
 
-            -- decode step size
+            -- Schrittweite dekodieren
             case step_sel is
                 when "00"   => step := to_unsigned(3, 12);    -- ~0.01
                 when "01"   => step := to_unsigned(26, 12);   -- ~0.10
